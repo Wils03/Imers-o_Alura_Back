@@ -12,13 +12,17 @@ export async function getTodosPosts(){
     return colecao.find().toArray(); // Retorna todos os documentos da coleção como um array
 };
 
-// Função para buscar post por ID
-function buscarPostPorID(id) {
-    return colecao.find((post) => post.id === Number(id)); // Retorna o post com o ID correspondente
-}
-
 // Função para buscar post pela descrição, insensível a maiúsculas/minúsculas
 export async function getPostPelaDescricao(palavraChave) {
-    const keywordLower = palavraChave.toLowerCase(); // Converte a palavra-chave para minúsculas
-    return colecao.find((post) => post.descricao.toLowerCase().includes(keywordLower)); // Retorna posts que contêm a palavra-chave na descrição
-}
+    // Busca documentos onde a descrição contém a palavra-chave (insensível a maiúsculas/minúsculas)
+    return colecao.find({ descricao: { $regex: palavraChave, $options: "i" } }).toArray();
+    // O $regex cria uma expressão regular para buscar a palavra-chave e $options: "i" torna a busca insensível a maiúsculas/minúsculas
+    /*Então, { descricao: { $regex: keywordLower, $options: "i" } } procura pelo texto keywordLower em descricao, sem diferenciar maiúsculas de minúsculas. Simples assim! 😊 */
+};
+
+export async function criarPost(conteudo) {
+// Define uma função assíncrona chamada criarPost que recebe um parâmetro chamado "conteudo"
+    return colecao.insertOne(conteudo);
+    // Insere o "conteudo" na coleção e retorna o resultado da inserção
+};
+
