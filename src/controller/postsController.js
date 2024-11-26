@@ -1,4 +1,5 @@
-import { getPostPelaDescricao, getTodosPosts, criarPost} from "../models/postsModels.js";
+import { getPostPelaDescricao, getTodosPosts, criarPost, atualizarPost} from "../models/postsModels.js";
+import gerarDescricaoComGemini from "../services/geminiServices.js";
 // Importa as funções necessárias do modelo de posts
 
 import fs from "fs";
@@ -38,6 +39,26 @@ export async function uploadImagem(req, res){
         const imagemAtualizada = `uploads/${postCriado.insertedId}.${extensao}`; // Cria o caminho atualizado do arquivo
         fs.renameSync(req.file.path, imagemAtualizada); // Renomeia o arquivo enviado
         res.status(200).json(postCriado); // Retorna a postagem criada com status 200 (sucesso)
+    }catch(erro){
+        console.error(erro.message); // Loga o erro no console
+        res.status(500).json({"ERRO": "Falha na requisição"}); // Retorna uma mensagem de erro com status 500 (falha no servidor)
+    };
+};
+export async function atualizarNovoPost(req, res){
+    const id = req.params.id;
+    const urlImagem = `http://localhost:3000/${id}.jpg`;
+    try{
+        const imageBuffer = fs.readFileSync(`uploads/${id}.jpg`);
+        const descricao = await gerarDescricaoComGemini(imageBuffer);
+
+        const post = {
+            imgUrl: urlImagem,
+            descricao: descricao,
+            alt: req.body.alt    
+        };
+
+        const postCriado = await atualizarPost(id, post); // Cria um novo post no banco de dados
+        res.status(200).json(postCriado); // Retorna o post criado com status 200 (sucesso)
     }catch(erro){
         console.error(erro.message); // Loga o erro no console
         res.status(500).json({"ERRO": "Falha na requisição"}); // Retorna uma mensagem de erro com status 500 (falha no servidor)
